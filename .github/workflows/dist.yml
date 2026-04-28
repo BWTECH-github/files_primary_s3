@@ -2,7 +2,8 @@ name: Build dist
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
   pull_request:
     types:
       - opened
@@ -14,4 +15,36 @@ permissions:
 
 jobs:
   build:
-    uses: owncloud/reusable-workflows/.github/workflows/build.yml@main
+    name: Appstore tarball
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ runner.os }}-php8.4-prod-${{ hashFiles('**/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php8.4-prod-
+
+      - name: Install production dependencies
+        run: composer install --no-dev --no-progress --no-interaction --optimize-autoloader
+
+      - name: Build appstore tarball
+        run: make appstore
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: files_primary_s3-appstore
+          path: build/artifacts/appstore/*.tar.gz
+          if-no-files-found: error
+          retention-days: 30
