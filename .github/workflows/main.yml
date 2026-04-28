@@ -19,7 +19,7 @@ concurrency:
 
 env:
   APP_NAME: files_primary_s3
-  PHP_VERSIONS: '["8.3"]'
+  PHP_VERSIONS: '["8.4"]'
 
 jobs:
   get-vars:

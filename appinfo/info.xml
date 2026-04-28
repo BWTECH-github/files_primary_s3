@@ -4,28 +4,31 @@
 	<name>S3 Primary Object Storage</name>
 	<summary>Leverage object storage via S3 as primary storage</summary>
 	<description>
-For it's benefits over traditional file system storage, object storage has become more and more popular. Speaking simply object storages split files into parts of the same size and store them including the metadata to assemble these objects to files. In contrast to file system storage this enables infinite scalability to cope for an exponentially growing amount of data. Furthermore object storage systems like CEPH or Scality RING provide built-in features for automatic data replication, redundancy/high availability and even geo-distribution which are necessities for professional production environments. For enterprises object storage systems can reduce maintenance efforts significantly and offer huge cost savings compared to other storage systems.
+S3 primary object storage integration for the owncloud.online distribution.
 
-This extension is the successor of the [ownCloud Objectstore App](https://marketplace.owncloud.com/apps/objectstore). It enables ownCloud Server to communicate with the widely spread S3 protocol (S3 HTTP API) to use object storage as it's primary storage location.
+For its benefits over traditional file system storage, object storage has become more and more popular. Speaking simply object storages split files into parts of the same size and store them including the metadata to assemble these objects to files. In contrast to file system storage this enables infinite scalability to cope for an exponentially growing amount of data. Furthermore object storage systems like CEPH or Scality RING provide built-in features for automatic data replication, redundancy/high availability and even geo-distribution which are necessities for professional production environments. For enterprises object storage systems can reduce maintenance efforts significantly and offer huge cost savings compared to other storage systems.
+
+This extension enables the server to communicate with the widely spread S3 protocol (S3 HTTP API) to use object storage as its primary storage location.
+
+Originally developed by ownCloud GmbH; modified for owncloud.online and PHP 8.4 by BW-Tech GmbH.
 
 **Supported features**
-- S3 Multi-part upload (enables uploading files > 5 GB)
+- S3 Multi-part upload (enables uploading files &gt; 5 GB)
 - S3 Versioning</description>
 	<category>storage</category>
 	<namespace>Files_Primary_S3</namespace>
-	<screenshot>https://raw.githubusercontent.com/owncloud/screenshots/master/objectstorage/ownCloud-app-s3-primary-objectstorage.jpg</screenshot>
 	<licence>GPLv2</licence>
-	<website>https://github.com/owncloud/files_primary_s3</website>
-	<bugs>https://github.com/owncloud/files_primary_s3/issues</bugs>
-	<repository type="git">https://github.com/owncloud/files_primary_s3.git</repository>
-	<author>ownCloud GmbH</author>
-	<version>1.6.0</version>
+	<website>https://bw.tech</website>
+	<bugs>https://github.com/BWTECH-github/owncloud.online/issues</bugs>
+	<repository type="git">https://github.com/BWTECH-github/owncloud.online.git</repository>
+	<author>ownCloud GmbH, modified by BW-Tech GmbH</author>
+	<version>1.6.1</version>
 	<documentation>
 		<admin>https://doc.owncloud.com/server/latest/admin_manual/configuration/files/external_storage/s3_compatible_object_storage_as_primary.html</admin>
 	</documentation>
 	<dependencies>
 		<owncloud min-version="11" max-version="11" />
-		<php min-version="8.3" />
+		<php min-version="8.4" />
 	</dependencies>
 	<types>
 		<filesystem/>

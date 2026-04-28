@@ -4,6 +4,7 @@
  * @author Jan Ackermann <jackermann@owncloud.com>
  *
  * @copyright Copyright (c) 2021, ownCloud GmbH
+ * Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
  * @license AGPL-3.0
  *
  * This code is free software: you can redistribute it and/or modify

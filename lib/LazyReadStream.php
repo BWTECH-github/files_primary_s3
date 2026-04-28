@@ -1,4 +1,9 @@
 <?php
+/**
+ * @copyright Copyright (c) 2024, ownCloud GmbH
+ * Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
+ * @license GPL-2.0
+ */
 
 namespace OCA\Files_Primary_S3;
 
@@ -9,24 +14,21 @@ use Psr\Http\Message\StreamInterface;
 class LazyReadStream implements StreamInterface {
 	use StreamDecoratorTrait;
 
-	private S3Client $client;
-	private string $bucket;
-	private string $key;
-	private ?string $versionId;
-	private int $size;
+	private readonly int $size;
 	private int $offset = 0;
 
 	/** @phpstan-ignore-next-line */
 	private StreamInterface $stream;
 
-	public function __construct(S3Client $client, string $bucket, string $key, ?string $versionId = null) {
-		$this->client = $client;
-		$this->bucket = $bucket;
-		$this->key = $key;
-		$this->versionId = $versionId;
+	public function __construct(
+		private readonly S3Client $client,
+		private readonly string $bucket,
+		private readonly string $key,
+		private readonly ?string $versionId = null,
+	) {
 		$this->resetStream();
 
-		// get size
+		// Eagerly fetch the size — also acts as access/auth probe.
 		$result = $this->client->headObject([
 			'Bucket'    => $this->bucket,
 			'Key'       => $this->key,
@@ -53,46 +55,45 @@ class LazyReadStream implements StreamInterface {
 		return $result['Body'];
 	}
 
+	#[\Override]
 	public function getSize(): ?int {
 		return $this->size;
 	}
 
+	#[\Override]
 	public function seek($offset, $whence = SEEK_SET): void {
-		if ($whence === SEEK_SET) {
-			$this->offset = $offset;
-		}
-		if ($whence === SEEK_END) {
-			$this->offset = $offset + $this->size;
-		}
-		if ($whence === SEEK_CUR) {
-			$this->offset += $offset;
-		}
+		$this->offset = match ($whence) {
+			SEEK_SET => $offset,
+			SEEK_END => $offset + $this->size,
+			SEEK_CUR => $this->offset + $offset,
+			default  => $this->offset,
+		};
 		$this->resetStream();
 	}
 
+	#[\Override]
 	public function isReadable(): bool {
-		# due to successful HEAD in ctor we know that we have access and can read
+		// A successful HEAD in the constructor proves we can read.
 		return true;
 	}
 
+	#[\Override]
 	public function isWritable(): bool {
 		return false;
 	}
 
+	#[\Override]
 	public function tell(): int {
 		return $this->offset;
 	}
 
+	#[\Override]
 	public function eof(): bool {
-		if (isset($this->stream)) {
-			return $this->stream->eof();
-		}
-		return false;
+		return isset($this->stream) && $this->stream->eof();
 	}
 
 	private function resetStream(): void {
-		// unsetting the property forces the first access to go through
-		// __get().
+		// unsetting the property forces the next access to go through __get().
 		unset($this->stream);
 	}
 }
