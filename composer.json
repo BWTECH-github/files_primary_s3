@@ -1,8 +1,8 @@
 {
-  "name": "owncloud/files_external_s3",
-  "description": "ownCloud primary storage integration using S3 protocol",
+  "name": "bwtech/files_primary_s3",
+  "description": "S3 primary storage integration for owncloud.online (PHP 8.4 fork of owncloud/files_external_s3)",
   "require": {
-    "php": ">=8.3",
+    "php": ">=8.4",
     "aws/aws-sdk-php": "^3.93"
   },
   "replace": {
@@ -15,7 +15,7 @@
     "optimize-autoloader": true,
     "classmap-authoritative": false,
     "platform": {
-      "php": "8.3"
+      "php": "8.4"
     },
     "allow-plugins": {
       "bamarni/composer-bin-plugin": true

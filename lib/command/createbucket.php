@@ -3,6 +3,7 @@
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2018, ownCloud GmbH
+ * Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
  * @license GPL-2.0
  *
  * This program is free software; you can redistribute it and/or
@@ -23,6 +24,7 @@
 namespace OCA\Files_Primary_S3\Command;
 
 use Aws\S3\S3Client;
+use InvalidArgumentException;
 use OCP\IConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
@@ -35,14 +37,11 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 class createBucket extends Command {
-	/** @var IConfig */
-	private $config;
-
-	public function __construct(IConfig $config) {
+	public function __construct(private readonly IConfig $config) {
 		parent::__construct();
-		$this->config = $config;
 	}
 
+	#[\Override]
 	protected function configure() {
 		$this
 			->setName('s3:create-bucket')
@@ -52,19 +51,12 @@ class createBucket extends Command {
 			->addOption('accept-warning', null, InputOption::VALUE_NONE, 'No warning about the usage of this command will be displayed');
 	}
 
-	/**
-	 * Executes the current command.
-	 *
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 *
-	 * @return int
-	 */
+	#[\Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int {
 		if (!$input->getOption('accept-warning')) {
 			$helper = new QuestionHelper();
 			$q = <<<EOS
-<question>This command is mainly for development purposes. 
+<question>This command is mainly for development purposes.
 Please consult the documentation of your S3 system to learn how to properly create a new bucket.
 For required settings from the ownCloud perspective please consult the ownCloud documentation.
 If you still want to use this command please confirm the usage by entering: yes
@@ -78,8 +70,7 @@ EOS;
 		/** @var string $bucketName */
 		$bucketName = $input->getArgument('bucket');
 		$client = $this->getClient();
-		$result = $client->doesBucketExist($bucketName);
-		if ($result) {
+		if ($client->doesBucketExist($bucketName)) {
 			$output->writeln("Bucket already exists: $bucketName");
 			if (!$input->getOption('update-configuration')) {
 				return 1;
@@ -99,7 +90,7 @@ EOS;
 			}
 		}
 
-		// enabled versioning on the bucket
+		// enable versioning on the bucket
 		$output->writeln("Enabling versioning on bucket <$bucketName> ...");
 		$client->putBucketVersioning([
 			'Bucket' => $bucketName,
@@ -110,11 +101,11 @@ EOS;
 		return 0;
 	}
 
-	private function getClient() {
+	private function getClient(): S3Client {
 		$cfg = $this->config->getSystemValue('objectstore_multibucket', null);
 		$cfg = $this->config->getSystemValue('objectstore', $cfg);
 		if ($cfg === null) {
-			throw new \InvalidArgumentException('No object store is configured.');
+			throw new InvalidArgumentException('No object store is configured.');
 		}
 		/* @phan-suppress-next-line PhanDeprecatedFunction */
 		return S3Client::factory($cfg['arguments']['options']);

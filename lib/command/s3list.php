@@ -3,6 +3,7 @@
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright Copyright (c) 2017, ownCloud GmbH
+ * Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
  * @license GPL-2.0
  *
  * This program is free software; you can redistribute it and/or
@@ -23,6 +24,7 @@
 namespace OCA\Files_Primary_S3\Command;
 
 use Aws\S3\S3Client;
+use InvalidArgumentException;
 use OCP\IConfig;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -32,37 +34,27 @@ use Symfony\Component\Console\Output\OutputInterface;
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 class s3List extends Command {
-	/** @var IConfig */
-	private $config;
-
-	public function __construct(IConfig $config) {
+	public function __construct(private readonly IConfig $config) {
 		parent::__construct();
-		$this->config = $config;
 	}
 
+	#[\Override]
 	protected function configure() {
 		$this
 			->setName('s3:list')
 			->setDescription('List objects, buckets or versions of an object')
-			->addArgument('bucket', InputArgument::OPTIONAL, 'Name of the bucket; it`s objects will be listed')
-			->addArgument('object', InputArgument::OPTIONAL, 'Key of the object; it`s versions will be listed');
+			->addArgument('bucket', InputArgument::OPTIONAL, 'Name of the bucket; its objects will be listed')
+			->addArgument('object', InputArgument::OPTIONAL, 'Key of the object; its versions will be listed');
 	}
 
-	/**
-	 * Executes the current command.
-	 *
-	 * @param InputInterface $input
-	 * @param OutputInterface $output
-	 *
-	 * @return int
-	 */
+	#[\Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int {
 		$client = $this->getClient();
 
 		$bucketName = $input->getArgument('bucket');
 		if ($bucketName === null) {
 			$result = $client->listBuckets();
-			$buckets = \array_map(function ($bucket) use ($client) {
+			$buckets = \array_map(static function ($bucket) use ($client) {
 				$versionStatus = $client->getBucketVersioning([
 					'Bucket' => $bucket['Name'],
 				]);
@@ -86,39 +78,29 @@ class s3List extends Command {
 					'Bucket' => $bucketName,
 					'Prefix' => $object
 				]);
-				$versions = \array_filter($result['Versions'], function ($version) use ($object) {
-					return $version['Key'] === $object;
-				});
+				$versions = \array_filter($result['Versions'] ?? [], static fn ($version) => $version['Key'] === $object);
 				$this->printValue($output, $versions, ['Key', 'LastModified', 'ETag', 'Size', 'VersionId', 'IsLatest']);
 
 				$output->writeln('Delete Markers:');
 				$output->writeln('----------------------------------------');
-				$markers = \array_filter(isset($result['DeleteMarkers']) ? $result['DeleteMarkers'] :  [], function ($marker) use ($object) {
-					return $marker['Key'] === $object;
-				});
+				$markers = \array_filter($result['DeleteMarkers'] ?? [], static fn ($marker) => $marker['Key'] === $object);
 				$this->printValue($output, $markers, ['Key', 'LastModified', 'VersionId', 'IsLatest']);
 			}
 		}
 		return 0;
 	}
 
-	private function getClient() {
+	private function getClient(): S3Client {
 		$cfg = $this->config->getSystemValue('objectstore_multibucket', null);
 		$cfg = $this->config->getSystemValue('objectstore', $cfg);
 		if ($cfg === null) {
-			throw new \InvalidArgumentException('No object store is configured.');
+			throw new InvalidArgumentException('No object store is configured.');
 		}
 		/* @phan-suppress-next-line PhanDeprecatedFunction */
 		return S3Client::factory($cfg['arguments']['options']);
 	}
 
-	/**
-	 * @param OutputInterface $output
-	 * @param array $results
-	 * @param array $keys
-	 * @internal param $bucket
-	 */
-	protected function printValue(OutputInterface $output, array $results, array $keys) {
+	protected function printValue(OutputInterface $output, array $results, array $keys): void {
 		foreach ($results as $result) {
 			foreach ($keys as $key) {
 				$value = isset($result[$key]) ? \json_encode($result[$key]) : '---';

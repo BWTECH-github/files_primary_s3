@@ -6,6 +6,7 @@
  * @author Thomas Müller <thomas.mueller@tmit.eu>
  *
  * @copyright (C) 2014-2017 ownCloud, GmbH.
+ * Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
  * @license GPL-2.0
  *
  * This program is free software; you can redistribute it and/or
@@ -55,21 +56,15 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	private ?S3Client $connection = null;
-	private ?S3Client $downConnection= null;
-	private array $params;
+	private ?S3Client $downConnection = null;
 
 	/**
-	 * S3Storage constructor.
-	 *
-	 * @param array $params
 	 * @throws Exception
 	 */
-	public function __construct(array $params) {
-		if (!isset($params['options'], $params['bucket'])) {
+	public function __construct(private readonly array $params) {
+		if (!isset($this->params['options'], $this->params['bucket'])) {
 			throw new Exception($this->t('Connection options and bucket must be configured.'));
 		}
-
-		$this->params = $params;
 	}
 
 	/**
@@ -81,21 +76,17 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			return;
 		}
 		$config = $this->params['options'];
-		$h = $this->getHandlerV7(false);  // curlMultiHandler
-		$dh = $this->getHandlerV7(true);  // streamHandler for downloads
-
-		$config['http_handler'] = $h;
+		$config['http_handler'] = $this->getHandlerV7(false); // CurlMultiHandler for uploads
 		$this->connection = new S3Client($config);
 
 		// replace the http_handler for the download connection
-		$config['http_handler'] = $dh;
+		$config['http_handler'] = $this->getHandlerV7(true); // StreamHandler for downloads
 		$this->downConnection = new S3Client($config);
 		try {
 			$this->connection->listBuckets();
 		} catch (S3Exception $exception) {
 			OC::$server->getLogger()->logException($exception);
-			$message = $this->t('No S3 ObjectStore available');
-			throw new ServiceUnavailableException($message);
+			throw new ServiceUnavailableException($this->t('No S3 ObjectStore available'));
 		}
 
 		if (!$this->connection->doesBucketExist($this->getBucket())) {
@@ -103,13 +94,9 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 		}
 	}
 
-	private function getHandlerV7($isStream): GuzzleHandler {
+	private function getHandlerV7(bool $isStream): GuzzleHandler {
 		// Create a handler stack that has all the default middlewares attached
-		if ($isStream) {
-			$handler = HandlerStack::create(new StreamHandler());
-		} else {
-			$handler = HandlerStack::create(new CurlMultiHandler());
-		}
+		$handler = HandlerStack::create($isStream ? new StreamHandler() : new CurlMultiHandler());
 
 		$requestFunc = static function (RequestInterface $request) {
 			if ($request->getMethod() !== 'PUT') {
@@ -132,19 +119,19 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 		return new GuzzleHandler($client);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	#[\Override]
 	public function getStorageId() {
 		return $this->params['bucket'];
 	}
 
+	#[\Override]
 	public function writeObject($urn, $stream) {
 		$this->init();
 
 		$this->upload($urn, $stream);
 	}
 
+	#[\Override]
 	public function deleteObject($urn) {
 		$this->init();
 		try {
@@ -157,9 +144,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	#[\Override]
 	public function readObject($urn) {
 		$this->init();
 		try {
@@ -170,7 +155,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 		}
 	}
 
-	private function getBucket() {
+	private function getBucket(): string {
 		return $this->params['bucket'];
 	}
 
@@ -182,6 +167,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	 * @throws ObjectStoreOperationException
 	 * @throws ServiceUnavailableException
 	 */
+	#[\Override]
 	public function getVersions($urn): array {
 		$this->init();
 		try {
@@ -191,7 +177,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			]);
 			// Phan does not understand that $list['Versions'] contains an array.
 			/* @phan-suppress-next-line PhanTypeMismatchArgumentInternal */
-			$versions = array_filter($list['Versions'], static function ($v) use ($urn) {
+			$versions = array_filter($list['Versions'] ?? [], static function ($v) use ($urn) {
 				return ($v['Key'] === $urn) && $v['IsLatest'] !== true;
 			});
 			return array_map(static function ($version) {
@@ -217,6 +203,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	 * @throws ObjectStoreOperationException
 	 * @throws ServiceUnavailableException
 	 */
+	#[\Override]
 	public function getVersion($urn, $versionId): array {
 		$this->init();
 		try {
@@ -227,7 +214,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			]);
 			// Phan does not understand that $list['Versions'] contains an array.
 			/* @phan-suppress-next-line PhanTypeMismatchArgumentInternal */
-			$versions = array_filter($list['Versions'], static function ($v) use ($urn, $versionId) {
+			$versions = array_filter($list['Versions'] ?? [], static function ($v) use ($urn, $versionId) {
 				return ($v['Key'] === $urn) && $v['VersionId'] === $versionId;
 			});
 			$version = array_values($versions)[0];
@@ -252,6 +239,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	 * @throws ObjectStoreOperationException
 	 * @throws ServiceUnavailableException
 	 */
+	#[\Override]
 	public function getContentOfVersion($urn, $versionId) {
 		$this->init();
 		try {
@@ -271,6 +259,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	 * @throws ObjectStoreOperationException
 	 * @throws ServiceUnavailableException
 	 */
+	#[\Override]
 	public function restoreVersion($urn, $versionId): bool {
 		$this->init();
 		try {
@@ -287,14 +276,12 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	}
 
 	/**
-	 * Tells the storage to explicitly create a version of a given file
-	 *
-	 * @param string $internalPath
-	 * @return bool
+	 * Tells the storage to explicitly create a version of a given file.
+	 * In a versioned bucket the versions are created automatically,
+	 * so this is a no-op.
 	 */
+	#[\Override]
 	public function saveVersion($internalPath): bool {
-		// There is no need in any explicit operations.
-		// In a versioned bucket the versions are created automatically
 		return true;
 	}
 
@@ -304,9 +291,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	}
 
 	/**
-	 * @param string $urn
-	 * @param $stream
-	 * @return void
+	 * @param resource $stream
 	 * @throws ObjectStoreWriteException
 	 */
 	private function upload(string $urn, $stream, bool $retry = true): void {
@@ -332,12 +317,12 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			 */
 			throw new ObjectStoreWriteException($e->getAwsErrorMessage(), $e->getStatusCode(), $e);
 		} catch (MultipartUploadException $e) {
-			# BackBlaze B2 - re-try to upload - https://www.backblaze.com/blog/b2-503-500-server-error/
-			# We do not explicitly get the http status code - we need to match for the error message.
-			# Far from perfect .....
+			// BackBlaze B2 - retry the upload once on transient 5xx
+			// (https://www.backblaze.com/blog/b2-503-500-server-error/).
+			// We do not get an explicit status code here, so we match the message.
 			if ($retry && str_contains($e->getMessage(), 'Please retry your upload')) {
 				OC::$server->getLogger()->logException($e, [
-					'message' => "B2 retrying upload."
+					'message' => 'B2 retrying upload.'
 				]);
 				$this->upload($urn, $stream, false);
 				return;

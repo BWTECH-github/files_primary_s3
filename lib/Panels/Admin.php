@@ -4,6 +4,7 @@
  * @author Jan Ackermann <jackermann@owncloud.com>
  *
  * @copyright Copyright (c) 2021, ownCloud GmbH
+ * Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
  * @license AGPL-3.0
  *
  * This code is free software: you can redistribute it and/or modify
@@ -21,31 +22,29 @@
  */
 namespace OCA\Files_Primary_S3\Panels;
 
+use OCP\IConfig;
 use OCP\Settings\ISettings;
 use OCP\Template;
-use OCP\IConfig;
 
 class Admin implements ISettings {
-	/** @var IConfig */
-	protected $config;
-
-	public function __construct(IConfig $config) {
-		$this->config = $config;
+	public function __construct(private readonly IConfig $config) {
 	}
 
+	#[\Override]
 	public function getPriority() {
 		return 0;
 	}
 
+	#[\Override]
 	public function getSectionID() {
 		return 'encryption';
 	}
 
+	#[\Override]
 	public function getPanel() {
 		$objectstore = $this->config->getSystemValue('objectstore', null);
 		if ($objectstore) {
-			$tmpl = new Template('files_primary_s3', 'settings');
-			return $tmpl;
+			return new Template('files_primary_s3', 'settings');
 		}
 
 		return null;

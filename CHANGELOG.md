@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Changed
+
+- Forked for the [owncloud.online](https://github.com/BWTECH-github/owncloud.online) distribution; maintained by BW-Tech GmbH.
+- Bumped minimum PHP version to **8.4** (composer, info.xml, CI).
+- Modernised codebase to PHP 8.4 idioms: constructor property promotion, `readonly` properties, typed properties, `#[\Override]` attributes, `match` expression, null-coalescing on optional S3 list responses.
+- Updated app metadata (`appinfo/info.xml`, `composer.json`, `README.md`) to reflect the BW-Tech fork.
+
+### Notes
+
+- Public API of `S3Storage`, `LazyReadStream`, OCC commands and the admin panel is unchanged — drop-in compatible with the upstream owncloud.online server.
+
 ## [1.6.1] - 2026-04-07
 
 ### Changed
