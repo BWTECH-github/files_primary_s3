@@ -1,4 +1,5 @@
 name: Build dist
+# Modified by BW-Tech GmbH for owncloud.online (PHP 8.4).
 
 on:
   push:
