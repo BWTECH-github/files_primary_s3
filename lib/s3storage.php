@@ -50,9 +50,13 @@ use function array_filter;
 use function array_map;
 use function array_values;
 use function fclose;
+use function is_resource;
 use function rawurlencode;
+use function rewind;
+use function stream_get_meta_data;
 
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/bootstrap.php';
+loadComposerDependencies();
 
 class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	private ?S3Client $connection = null;
@@ -62,6 +66,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	 * @throws Exception
 	 */
 	public function __construct(private readonly array $params) {
+		assertComposerDependencies();
 		if (!isset($this->params['options'], $this->params['bucket'])) {
 			throw new Exception($this->t('Connection options and bucket must be configured.'));
 		}
@@ -180,15 +185,16 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			$versions = array_filter($list['Versions'] ?? [], static function ($v) use ($urn) {
 				return ($v['Key'] === $urn) && $v['IsLatest'] !== true;
 			});
-			return array_map(static function ($version) {
+			$versions = array_map(static function ($version) {
 				return [
 					'version' => $version['VersionId'],
 					'timestamp' => $version['LastModified']->getTimestamp(),
 					'oid' => $version['Key'],
 					'etag' => $version['ETag'],
-					'size' => $version['Size'],
+					'size' => (int)$version['Size'],
 				];
 			}, $versions);
+			return array_values($versions);
 		} catch (AwsException $ex) {
 			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
 		}
@@ -207,23 +213,18 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 	public function getVersion($urn, $versionId): array {
 		$this->init();
 		try {
-			$list = $this->connection->listObjectVersions([
+			$result = $this->connection->headObject([
 				'Bucket' => $this->getBucket(),
-				'Prefix' => $urn,
-				'VersionIdMarker' => $versionId
+				'Key' => $urn,
+				'VersionId' => $versionId,
 			]);
-			// Phan does not understand that $list['Versions'] contains an array.
-			/* @phan-suppress-next-line PhanTypeMismatchArgumentInternal */
-			$versions = array_filter($list['Versions'] ?? [], static function ($v) use ($urn, $versionId) {
-				return ($v['Key'] === $urn) && $v['VersionId'] === $versionId;
-			});
-			$version = array_values($versions)[0];
+
 			return [
-				'version' => $version['VersionId'],
-				'timestamp' => $version['LastModified']->getTimestamp(),
-				'oid' => $version['Key'],
-				'etag' => $version['ETag'],
-				'size' => $version['Size'],
+				'version' => $versionId,
+				'timestamp' => $result['LastModified']->getTimestamp(),
+				'oid' => $urn,
+				'etag' => $result['ETag'],
+				'size' => (int)$result['ContentLength'],
 			];
 		} catch (AwsException $ex) {
 			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
@@ -324,6 +325,9 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 				OC::$server->getLogger()->logException($e, [
 					'message' => 'B2 retrying upload.'
 				]);
+				if (is_resource($stream) && (stream_get_meta_data($stream)['seekable'] ?? false)) {
+					rewind($stream);
+				}
 				$this->upload($urn, $stream, false);
 				return;
 			}

@@ -24,6 +24,7 @@
 namespace OCA\Files_Primary_S3\Command;
 
 use Aws\S3\S3Client;
+use Aws\S3\Exception\S3Exception;
 use InvalidArgumentException;
 use OCP\IConfig;
 use Symfony\Component\Console\Command\Command;
@@ -31,7 +32,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../bootstrap.php';
+\OCA\Files_Primary_S3\loadComposerDependencies();
 
 class s3List extends Command {
 	public function __construct(private readonly IConfig $config) {
@@ -49,20 +51,31 @@ class s3List extends Command {
 
 	#[\Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int {
+		\OCA\Files_Primary_S3\assertComposerDependencies();
 		$client = $this->getClient();
 
 		$bucketName = $input->getArgument('bucket');
 		if ($bucketName === null) {
 			$result = $client->listBuckets();
-			$buckets = \array_map(static function ($bucket) use ($client) {
-				$versionStatus = $client->getBucketVersioning([
-					'Bucket' => $bucket['Name'],
-				]);
-				$bucket['Versioning'] = $versionStatus['Status'];
-				$corsConfig = $client->getBucketCors([
-					'Bucket' => $bucket['Name'],
-				]);
-				$bucket['CORS'] = $corsConfig['CORSRules'];
+			$buckets = \array_map(static function (array $bucket) use ($client) {
+				try {
+					$versionStatus = $client->getBucketVersioning([
+						'Bucket' => $bucket['Name'],
+					]);
+					$bucket['Versioning'] = $versionStatus['Status'] ?? '---';
+				} catch (S3Exception $e) {
+					$bucket['Versioning'] = $e->getAwsErrorMessage() ?: $e->getMessage();
+				}
+
+				try {
+					$corsConfig = $client->getBucketCors([
+						'Bucket' => $bucket['Name'],
+					]);
+					$bucket['CORS'] = $corsConfig['CORSRules'] ?? [];
+				} catch (S3Exception $e) {
+					$bucket['CORS'] = [];
+				}
+
 				return $bucket;
 			}, $result['Buckets']);
 			$this->printValue($output, $buckets, ['Name', 'Versioning', 'CORS']);

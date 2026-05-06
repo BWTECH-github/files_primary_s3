@@ -10,6 +10,7 @@ namespace OCA\Files_Primary_S3;
 use Aws\S3\S3Client;
 use GuzzleHttp\Psr7\StreamDecoratorTrait;
 use Psr\Http\Message\StreamInterface;
+use function strlen;
 
 class LazyReadStream implements StreamInterface {
 	use StreamDecoratorTrait;
@@ -78,6 +79,11 @@ class LazyReadStream implements StreamInterface {
 	}
 
 	#[\Override]
+	public function isSeekable(): bool {
+		return true;
+	}
+
+	#[\Override]
 	public function isWritable(): bool {
 		return false;
 	}
@@ -90,6 +96,13 @@ class LazyReadStream implements StreamInterface {
 	#[\Override]
 	public function eof(): bool {
 		return isset($this->stream) && $this->stream->eof();
+	}
+
+	#[\Override]
+	public function read($length): string {
+		$data = $this->stream->read($length);
+		$this->offset += strlen($data);
+		return $data;
 	}
 
 	private function resetStream(): void {
