@@ -17,7 +17,7 @@ When this app is enabled and configured, **every user file** that ownCloud write
 - **Server-side encryption** (optional, e.g. `AES256`)
 - **Configurable part size and upload concurrency**
 
-Tested against AWS S3, Ceph RGW, Scality RING, MinIO, and BackBlaze B2.
+Tested against AWS S3, Ceph RGW, Scality RING, MinIO, BackBlaze B2, and Wasabi-compatible S3 endpoints.
 
 ---
 
@@ -95,6 +95,7 @@ $CONFIG = [
             'serversideencryption' => 'AES256',
             'part_size'            => 524288000,   // 500 MB chunks
             'concurrency'          => 5,
+            'availableStorage'     => 1099511627776, // 1 TB quota hint for apps/metrics
         ],
     ],
 ];
@@ -113,6 +114,7 @@ $CONFIG = [
 | `serversideencryption` | no | e.g. `'AES256'` |
 | `part_size` | no | Part size in bytes for multipart upload (min 5 MiB, default 5 MiB) |
 | `concurrency` | no | Number of parallel parts during multipart upload (default 3) |
+| `availableStorage` | no | Optional byte count used by ownCloud core as storage capacity hint |
 
 > 🔐 **Encryption note:** ownCloud's app-level "Default Encryption Module" is automatically disabled when this app is active — use S3 server-side encryption instead.
 

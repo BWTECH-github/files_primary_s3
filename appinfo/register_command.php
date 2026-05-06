@@ -23,11 +23,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /** @var Symfony\Component\Console\Application $application */
-$encryptionEnableCmd = $application->get('encryption:enable'); // @phan-suppress-current-line PhanUndeclaredGlobalVariable
-
 $objectstore = \OC::$server->getConfig()->getSystemValue('objectstore', null);
+$objectstore = \OC::$server->getConfig()->getSystemValue('objectstore_multibucket', $objectstore);
 
-if (isset($objectstore)) {
+if (isset($objectstore) && $application->has('encryption:enable')) { // @phan-suppress-current-line PhanUndeclaredGlobalVariable
+	$encryptionEnableCmd = $application->get('encryption:enable');
 	$encryptionEnableCmd->setCode(function (InputInterface $input, OutputInterface $output) {
 		$output->writeln('<error>Storage encryption is not compatible with S3 Object Storage.</error>');
 		return 0;

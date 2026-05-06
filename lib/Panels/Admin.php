@@ -43,6 +43,7 @@ class Admin implements ISettings {
 	#[\Override]
 	public function getPanel() {
 		$objectstore = $this->config->getSystemValue('objectstore', null);
+		$objectstore = $this->config->getSystemValue('objectstore_multibucket', $objectstore);
 		if ($objectstore) {
 			return new Template('files_primary_s3', 'settings');
 		}

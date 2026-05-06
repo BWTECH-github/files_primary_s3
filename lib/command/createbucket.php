@@ -34,7 +34,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../bootstrap.php';
+\OCA\Files_Primary_S3\loadComposerDependencies();
 
 class createBucket extends Command {
 	public function __construct(private readonly IConfig $config) {
@@ -53,6 +54,7 @@ class createBucket extends Command {
 
 	#[\Override]
 	protected function execute(InputInterface $input, OutputInterface $output): int {
+		\OCA\Files_Primary_S3\assertComposerDependencies();
 		if (!$input->getOption('accept-warning')) {
 			$helper = new QuestionHelper();
 			$q = <<<EOS
