@@ -59,6 +59,17 @@ require_once __DIR__ . '/bootstrap.php';
 loadComposerDependencies();
 
 class S3Storage implements IObjectStore, IVersionedObjectStorage {
+	/** Wie lange eine erfolgreiche Bucket-Validierung im Memcache gilt (Sekunden) */
+	private const BUCKET_VERIFY_TTL = 3600;
+
+	/**
+	 * In-Process-Gate pro Bucket: es können viele Storage-Instanzen pro
+	 * Request existieren, der Memcache-Lookup soll nur einmal laufen.
+	 *
+	 * @var array<string, bool>
+	 */
+	private static array $verifiedBuckets = [];
+
 	private ?S3Client $connection = null;
 	private ?S3Client $downConnection = null;
 
@@ -87,16 +98,47 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 		// replace the http_handler for the download connection
 		$config['http_handler'] = $this->getHandlerV7(true); // StreamHandler for downloads
 		$this->downConnection = new S3Client($config);
+
+		$this->verifyBucketExists();
+	}
+
+	/**
+	 * Prüft einmalig, dass der konfigurierte Bucket erreichbar ist.
+	 * Das Ergebnis wird im Memcache gecacht, damit nicht jeder Request
+	 * einen zusätzlichen S3-Roundtrip vor dem eigentlichen Upload zahlt.
+	 * Nur der Erfolgsfall wird gecacht — Fehler werden beim nächsten
+	 * Request erneut geprüft.
+	 *
+	 * @throws ServiceUnavailableException
+	 * @throws Exception
+	 */
+	private function verifyBucketExists(): void {
+		$bucket = $this->getBucket();
+		// Cache-Key enthält den Endpoint, weil derselbe Bucket-Name auf
+		// verschiedenen S3-Endpoints existieren kann
+		$cacheKey = 'bucket-exists-' . \md5(($this->params['options']['endpoint'] ?? '') . '/' . $bucket);
+		if (self::$verifiedBuckets[$cacheKey] ?? false) {
+			return;
+		}
+		$memcache = OC::$server->getMemCacheFactory()->create('files_primary_s3');
+		if ($memcache->get($cacheKey)) {
+			self::$verifiedBuckets[$cacheKey] = true;
+			return;
+		}
 		try {
-			$this->connection->listBuckets();
+			// HeadBucket statt listBuckets: braucht kein s3:ListAllMyBuckets-Recht.
+			// accept403 = true: eingeschränkte IAM-Keys ohne HeadBucket-Recht
+			// gelten wie bisher (AccessDenied bei doesBucketExist) als vorhanden.
+			$bucketExists = $this->connection->doesBucketExistV2($bucket, true);
 		} catch (S3Exception $exception) {
 			OC::$server->getLogger()->logException($exception);
 			throw new ServiceUnavailableException($this->t('No S3 ObjectStore available'));
 		}
-
-		if (!$this->connection->doesBucketExist($this->getBucket())) {
-			throw new Exception($this->t('Bucket <%s> does not exist.', [$this->getBucket()]));
+		if (!$bucketExists) {
+			throw new Exception($this->t('Bucket <%s> does not exist.', [$bucket]));
 		}
+		self::$verifiedBuckets[$cacheKey] = true;
+		$memcache->set($cacheKey, true, self::BUCKET_VERIFY_TTL);
 	}
 
 	private function getHandlerV7(bool $isStream): GuzzleHandler {
@@ -322,14 +364,23 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			// (https://www.backblaze.com/blog/b2-503-500-server-error/).
 			// We do not get an explicit status code here, so we match the message.
 			if ($retry && str_contains($e->getMessage(), 'Please retry your upload')) {
-				OC::$server->getLogger()->logException($e, [
-					'message' => 'B2 retrying upload.'
-				]);
-				if (is_resource($stream) && (stream_get_meta_data($stream)['seekable'] ?? false)) {
-					rewind($stream);
+				// Retry nur, wenn der Stream vollständig zurückgespult werden
+				// kann — ein teilweise konsumierter, nicht-seekbarer Stream
+				// würde sonst still als verkürztes Objekt hochgeladen.
+				$isRewound = is_resource($stream)
+					&& (stream_get_meta_data($stream)['seekable'] ?? false)
+					&& rewind($stream);
+				if ($isRewound) {
+					OC::$server->getLogger()->logException($e, [
+						'message' => 'B2 retrying upload.'
+					]);
+					$this->upload($urn, $stream, false);
+					return;
 				}
-				$this->upload($urn, $stream, false);
-				return;
+				OC::$server->getLogger()->error(
+					'B2 upload retry skipped: stream is not rewindable.',
+					['app' => 'files_primary_s3']
+				);
 			}
 			/**
 			 * There can be multiple parts that might have failed to upload. So it would be
