@@ -187,7 +187,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 				'Key' => $urn,
 			]);
 		} catch (AwsException $ex) {
-			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
+			throw new ObjectStoreOperationException((string)$ex->getAwsErrorMessage(), (int)$ex->getStatusCode(), $ex);
 		}
 	}
 
@@ -198,7 +198,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			$stream = new LazyReadStream($this->downConnection, $this->getBucket(), $urn);
 			return StreamWrapper::getResource($stream);
 		} catch (AwsException $ex) {
-			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
+			throw new ObjectStoreOperationException((string)$ex->getAwsErrorMessage(), (int)$ex->getStatusCode(), $ex);
 		}
 	}
 
@@ -238,7 +238,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			}, $versions);
 			return array_values($versions);
 		} catch (AwsException $ex) {
-			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
+			throw new ObjectStoreOperationException((string)$ex->getAwsErrorMessage(), (int)$ex->getStatusCode(), $ex);
 		}
 	}
 
@@ -269,7 +269,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 				'size' => (int)$result['ContentLength'],
 			];
 		} catch (AwsException $ex) {
-			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
+			throw new ObjectStoreOperationException((string)$ex->getAwsErrorMessage(), (int)$ex->getStatusCode(), $ex);
 		}
 	}
 
@@ -289,7 +289,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			$stream = new LazyReadStream($this->downConnection, $this->getBucket(), $urn, $versionId);
 			return StreamWrapper::getResource($stream);
 		} catch (AwsException $ex) {
-			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
+			throw new ObjectStoreOperationException((string)$ex->getAwsErrorMessage(), (int)$ex->getStatusCode(), $ex);
 		}
 	}
 
@@ -314,7 +314,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 
 			return true;
 		} catch (AwsException $ex) {
-			throw new ObjectStoreOperationException($ex->getAwsErrorMessage(), $ex->getStatusCode(), $ex);
+			throw new ObjectStoreOperationException((string)$ex->getAwsErrorMessage(), (int)$ex->getStatusCode(), $ex);
 		}
 	}
 
@@ -358,7 +358,7 @@ class S3Storage implements IObjectStore, IVersionedObjectStorage {
 			 * If the error is from AwsException then just wrap the aws error message
 			 * to our exception.
 			 */
-			throw new ObjectStoreWriteException($e->getAwsErrorMessage(), $e->getStatusCode(), $e);
+			throw new ObjectStoreWriteException((string)$e->getAwsErrorMessage(), (int)$e->getStatusCode(), $e);
 		} catch (MultipartUploadException $e) {
 			// BackBlaze B2 - retry the upload once on transient 5xx
 			// (https://www.backblaze.com/blog/b2-503-500-server-error/).

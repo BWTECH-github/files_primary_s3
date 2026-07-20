@@ -22,7 +22,7 @@ Originally developed by ownCloud GmbH; modified for owncloud.online and PHP 8.4 
 	<bugs>https://github.com/BWTECH-github/owncloud.online/issues</bugs>
 	<repository type="git">https://github.com/BWTECH-github/owncloud.online.git</repository>
 	<author>ownCloud GmbH, modified by BW-Tech GmbH</author>
-	<version>1.6.1</version>
+	<version>1.6.2</version>
 	<documentation>
 		<admin>https://doc.owncloud.com/server/latest/admin_manual/configuration/files/external_storage/s3_compatible_object_storage_as_primary.html</admin>
 	</documentation>
