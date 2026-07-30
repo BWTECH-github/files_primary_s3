@@ -17,6 +17,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
 - Public API of `S3Storage`, `LazyReadStream`, OCC commands and the admin panel is unchanged — drop-in compatible with the upstream owncloud.online server.
 
+## [1.6.3] - 2026-07-30
+
+### Fixed
+
+- **Critical:** resolved a fatal class-shadowing conflict on owncloud.online 11.0.11
+  (`Call to undefined method GuzzleHttp\Psr7\Utils::caselessEquals()`, and grey preview
+  tiles from `StreamWrapper::getSource`). The app bundled its own copy of the Guzzle HTTP
+  stack (guzzle 7.10 / psr7 2.9). Since the server upgraded Guzzle to 7.15 / psr7 2.13,
+  the two copies collided in the shared class space and produced an inconsistent
+  "Frankenstein" Guzzle whenever S3 was used as primary object store, breaking every
+  `occ` call and preview generation.
+
+### Changed
+
+- The app no longer bundles libraries that the owncloud.online server already provides
+  (`guzzlehttp/guzzle`, `guzzlehttp/psr7`, `guzzlehttp/promises`, `psr/http-message`,
+  `psr/http-client`, `psr/http-factory`). These are now declared via `composer replace`
+  so the app always uses the server's copy. This permanently prevents version-skew
+  conflicts on future server Guzzle bumps and shrinks the app package. Only AWS-specific
+  dependencies (`aws/aws-sdk-php`, `aws/aws-crt-php`, `mtdowling/jmespath.php`,
+  `symfony/*`) remain vendored.
+
 ## [1.6.1] - 2026-04-07
 
 ### Changed
