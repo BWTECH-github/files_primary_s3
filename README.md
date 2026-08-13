@@ -2,9 +2,9 @@
 
 **S3-compatible object storage as primary storage for [owncloud.online](https://github.com/BWTECH-github/owncloud.online).**
 
-A fork of the original [owncloud/files_primary_s3](https://github.com/owncloud/files_primary_s3) app, updated for **PHP 8.4** and maintained as part of the owncloud.online distribution by [BW.Tech](https://bw.tech).
+A fork of the original [owncloud/files_primary_s3](https://github.com/BWTECH-github/files_primary_s3) app, updated for **PHP 8.4** and maintained as part of the owncloud.online distribution by [BW.Tech](https://bw.tech).
 
-When this app is enabled and configured, **every user file** that ownCloud writes goes into an S3 bucket instead of the local filesystem. Metadata (filenames, shares, permissions) stays in the database; the file *contents* live in S3.
+When this app is enabled and configured, **every user file** that owncloud.online writes goes into an S3 bucket instead of the local filesystem. Metadata (filenames, shares, permissions) stays in the database; the file *contents* live in S3.
 
 ---
 
@@ -64,7 +64,7 @@ chown -R www-data:www-data /var/www/owncloud/apps/files_primary_s3
 sudo -u www-data php /var/www/owncloud/occ app:enable files_primary_s3
 ```
 
-> **⚠️ Important:** Enable the app **before** you create the first user, or migrate an empty instance. ownCloud does not move existing files from the local filesystem into S3 automatically.
+> **⚠️ Important:** Enable the app **before** you create the first user, or migrate an empty instance. owncloud.online does not move existing files from the local filesystem into S3 automatically.
 
 ---
 
@@ -114,15 +114,15 @@ $CONFIG = [
 | `serversideencryption` | no | e.g. `'AES256'` |
 | `part_size` | no | Part size in bytes for multipart upload (min 5 MiB, default 5 MiB) |
 | `concurrency` | no | Number of parallel parts during multipart upload (default 3) |
-| `availableStorage` | no | Optional byte count used by ownCloud core as storage capacity hint |
+| `availableStorage` | no | Optional byte count used by owncloud.online core as storage capacity hint |
 
-> 🔐 **Encryption note:** ownCloud's app-level "Default Encryption Module" is automatically disabled when this app is active — use S3 server-side encryption instead.
+> 🔐 **Encryption note:** owncloud.online's app-level "Default Encryption Module" is automatically disabled when this app is active — use S3 server-side encryption instead.
 
 ---
 
 ## Starting and verifying the setup
 
-After enabling the app and writing the config, no service restart is required for ownCloud — the next request picks up the new storage backend. If you run PHP-FPM with OPcache, reload it once:
+After enabling the app and writing the config, no service restart is required for owncloud.online — the next request picks up the new storage backend. If you run PHP-FPM with OPcache, reload it once:
 
 ```bash
 sudo systemctl reload php8.4-fpm
@@ -181,18 +181,18 @@ occ s3:create-bucket owncloud-primary --accept-warning
 
 ## Daily usage
 
-Once configured, the app is **invisible to end users**. They use ownCloud exactly as before — web UI, desktop client, mobile, WebDAV — and every uploaded file lands in S3 transparently.
+Once configured, the app is **invisible to end users**. They use owncloud.online exactly as before — web UI, desktop client, mobile, WebDAV — and every uploaded file lands in S3 transparently.
 
 What changes for the **administrator**:
 
 - **Backups** — back up the database *and* the S3 bucket (or rely on bucket replication / versioning).
 - **Disk usage** — `du` on the data directory shows almost nothing; query S3 for actual storage consumption.
-- **File restore** — deleted file? Use S3 versioning. The included `IVersionedObjectStorage` implementation surfaces versions through ownCloud's standard versions UI as well.
-- **No app-level encryption** — the "Default Encryption Module" is disabled by design (S3 + ownCloud encryption are incompatible). Use `serversideencryption` instead.
+- **File restore** — deleted file? Use S3 versioning. The included `IVersionedObjectStorage` implementation surfaces versions through owncloud.online's standard versions UI as well.
+- **No app-level encryption** — the "Default Encryption Module" is disabled by design (S3 + owncloud.online encryption are incompatible). Use `serversideencryption` instead.
 
 ### Admin panel
 
-After enabling, **Settings → Admin → Security → Encryption** shows a banner explaining that ownCloud-side encryption is unavailable while S3 primary storage is active. This is informational only.
+After enabling, **Settings → Admin → Security → Encryption** shows a banner explaining that owncloud.online-side encryption is unavailable while S3 primary storage is active. This is informational only.
 
 ---
 
@@ -235,6 +235,6 @@ CI (GitHub Actions) runs code style + commit-message linting on every push; see 
 Originally developed by **ownCloud GmbH**, licensed under **GPL-2.0**.
 Modifications for **owncloud.online** and **PHP 8.4** by **BW-Tech GmbH**.
 
-Original project: https://github.com/owncloud/files_primary_s3
+Original project: https://github.com/BWTECH-github/files_primary_s3
 Distribution this fork targets: https://github.com/BWTECH-github/owncloud.online
 Maintainer: https://bw.tech
