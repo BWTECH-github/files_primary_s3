@@ -40,7 +40,7 @@ PHP extensions required at runtime: `curl`, `json`, `mbstring`, `xml`, `openssl`
 
 ```bash
 cd /var/www/owncloud/apps
-git clone https://github.com/GrossLukas/files_primary_s3.git
+git clone https://github.com/BWTECH-github/files_primary_s3.git
 cd files_primary_s3
 ```
 
