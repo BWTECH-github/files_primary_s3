@@ -18,13 +18,13 @@ Originally developed by ownCloud GmbH; modified for owncloud.online and PHP 8.4 
 	<category>storage</category>
 	<namespace>Files_Primary_S3</namespace>
 	<licence>GPLv2</licence>
-	<website>https://bw.tech</website>
-	<bugs>https://github.com/BWTECH-github/owncloud.online/issues</bugs>
-	<repository type="git">https://github.com/BWTECH-github/owncloud.online.git</repository>
+	<website>https://owncloud.online</website>
+	<bugs>https://github.com/BWTECH-github/files_primary_s3/issues</bugs>
+	<repository type="git">https://github.com/BWTECH-github/files_primary_s3.git</repository>
 	<author>ownCloud GmbH, modified by BW-Tech GmbH</author>
 	<version>1.6.3</version>
 	<documentation>
-		<admin>https://doc.owncloud.com/server/latest/admin_manual/configuration/files/external_storage/s3_compatible_object_storage_as_primary.html</admin>
+		<admin>https://github.com/BWTECH-github/files_primary_s3#readme</admin>
 	</documentation>
 	<dependencies>
 		<owncloud min-version="11" max-version="11" />
