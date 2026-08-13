@@ -22,7 +22,7 @@ Originally developed by ownCloud GmbH; modified for owncloud.online and PHP 8.4 
 	<bugs>https://github.com/BWTECH-github/files_primary_s3/issues</bugs>
 	<repository type="git">https://github.com/BWTECH-github/files_primary_s3.git</repository>
 	<author>ownCloud GmbH, modified by BW-Tech GmbH</author>
-	<version>1.6.3</version>
+	<version>1.6.4</version>
 	<documentation>
 		<admin>https://github.com/BWTECH-github/files_primary_s3#readme</admin>
 	</documentation>
