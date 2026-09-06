@@ -3,10 +3,10 @@
   "description": "S3 primary storage integration for owncloud.online. Modified by BW-Tech GmbH for owncloud.online (PHP 8.4 fork of owncloud/files_external_s3)",
   "require": {
     "php": ">=8.4",
-    "aws/aws-sdk-php": "3.372.2"
+    "aws/aws-sdk-php": "^3.394"
   },
   "replace": {
-    "guzzlehttp/guzzle": "7.15.1",
+    "guzzlehttp/guzzle": "7.15.2",
     "guzzlehttp/psr7": "2.13.0",
     "guzzlehttp/promises": "2.5.1",
     "psr/http-message": "2.0",
