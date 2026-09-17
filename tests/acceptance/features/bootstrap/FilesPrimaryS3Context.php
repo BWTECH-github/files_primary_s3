@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 /**
- * ownCloud
+ * owncloud.online
  *
  * @author Dipak Acharya <dipak@jankaritech.com>
  * @copyright Copyright (c) 2020, JankariTech

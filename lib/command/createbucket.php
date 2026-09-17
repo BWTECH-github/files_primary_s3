@@ -60,7 +60,7 @@ class createBucket extends Command {
 			$q = <<<EOS
 <question>This command is mainly for development purposes.
 Please consult the documentation of your S3 system to learn how to properly create a new bucket.
-For required settings from the ownCloud perspective please consult the ownCloud documentation.
+For required settings from the owncloud.online perspective please consult the owncloud.online documentation.
 If you still want to use this command please confirm the usage by entering: yes
 </question>
 EOS;

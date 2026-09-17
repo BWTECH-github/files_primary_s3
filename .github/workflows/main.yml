@@ -1,5 +1,5 @@
 # Self-contained CI for the owncloud.online plugin fork (BW-Tech GmbH).
-# Replaces the upstream owncloud reusable-workflow CI (acceptance/Selenium/strict
+# Replaces the upstream reusable-workflow CI (acceptance/Selenium/strict
 # style matrix) which cannot run in this fork. php -l is enforced; code style and
 # the integration smoke test are informational so valid code stays green.
 name: CI
@@ -95,7 +95,7 @@ jobs:
         working-directory: server/apps/${{ steps.app.outputs.id }}
         run: composer install --no-interaction --no-progress --prefer-dist --no-dev || true
 
-      - name: Install owncloud (sqlite)
+      - name: Install owncloud.online (sqlite)
         working-directory: server
         run: |
           mkdir -p data

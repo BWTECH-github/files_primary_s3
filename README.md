@@ -2,7 +2,7 @@
 
 **S3-compatible object storage as primary storage for [owncloud.online](https://github.com/BWTECH-github/owncloud.online).**
 
-A fork of the original [owncloud/files_primary_s3](https://github.com/BWTECH-github/files_primary_s3) app, updated for **PHP 8.4** and maintained as part of the owncloud.online distribution by [BW.Tech](https://bw.tech).
+A fork of the original [files_primary_s3](https://github.com/BWTECH-github/files_primary_s3) app, updated for **PHP 8.4** and maintained as part of the owncloud.online distribution by [BW.Tech](https://bw.tech).
 
 When this app is enabled and configured, **every user file** that owncloud.online writes goes into an S3 bucket instead of the local filesystem. Metadata (filenames, shares, permissions) stays in the database; the file *contents* live in S3.
 
@@ -234,7 +234,8 @@ CI (GitHub Actions) runs code style + commit-message linting on every push; see 
 
 ## Attribution & License
 
-Originally developed by **ownCloud GmbH**, licensed under **GPL-2.0**.
+Fork of an open-source app licensed under **GPL-2.0**; the original copyright
+notices are kept in the source files.
 Modifications for **owncloud.online** and **PHP 8.4** by **BW-Tech GmbH**.
 
 Original project: https://github.com/BWTECH-github/files_primary_s3

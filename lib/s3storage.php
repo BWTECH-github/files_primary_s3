@@ -1,6 +1,6 @@
 <?php
 /**
- * ownCloud
+ * owncloud.online
  *
  * @author Jörn Friedrich Dreyer <jfd@owncloud.com>
  * @author Thomas Müller <thomas.mueller@tmit.eu>
