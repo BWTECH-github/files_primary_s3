@@ -22,10 +22,17 @@
  */
 script('files_primary_s3', 'settings');
 style('files_primary_s3', 'settings');
+/*
+ * Modified by BW-Tech GmbH on 2026-09-17.
+ * Changes:
+ *   - only the hint itself, with its own id: the former wrapper
+ *     div.section#encryptionAPI duplicated the id of the core card, and after
+ *     the script moved the hint away it stayed behind as an empty card
+ *
+ * Das Skript hängt den Hinweis in die Kernkarte "Serverseitige Verschlüsselung"
+ * direkt vor den Schalter, den er erklärt.
+ */
 ?>
-
-<div class="section" id="encryptionAPI">
-	<div class="warning">
-		<?php p($l->t('Storage encryption is not compatible with S3 Object Storage.')); ?>
-	</div>
-</div>
+<p id="files-primary-s3-encryption-hint" class="warning" role="note">
+	<?php p($l->t('Storage encryption is not compatible with S3 Object Storage.')); ?>
+</p>

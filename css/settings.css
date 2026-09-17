@@ -1,3 +1,7 @@
-#encryptionAPI .warning {
-    margin-bottom: 10px;
+/*
+ * Abstand zum Schalter darunter. Farben, Rahmen und Polster kommen aus der
+ * Warnungsregel des Kerns.
+ */
+#files-primary-s3-encryption-hint {
+	margin: 0 0 12px;
 }

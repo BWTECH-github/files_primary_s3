@@ -1,10 +1,10 @@
 OC.L10N.register(
     "files_primary_s3",
     {
-    "Connection options and bucket must be configured." : "Verbindungsoptionen und der Bucket müssen konfiguriert sein.",
+    "Connection options and bucket must be configured." : "Verbindungsoptionen und Bucket müssen konfiguriert sein.",
     "No S3 ObjectStore available" : "Kein S3-Objektspeicher verfügbar",
     "Bucket <%s> does not exist." : "Bucket <%s> existiert nicht.",
-    "Upload failed. Please ask you administrator to have a look at the log files for more details." : "Das Hochladen ist fehlgeschlagen. Bitte kontaktieren Sie den Administrator und geben ihm den Hinweis die Protokolldateien zu kontrollieren.",
-    "Storage encryption is not compatible with S3 Object Storage." : "Speicherverschlüsselung ist mit S3 Object Storage nicht kompatibel."
+    "Upload failed. Please ask you administrator to have a look at the log files for more details." : "Das Hochladen ist fehlgeschlagen. Wenden Sie sich an Ihren Administrator, damit er die Protokolldateien prüft.",
+    "Storage encryption is not compatible with S3 Object Storage." : "Die serverseitige Verschlüsselung lässt sich mit S3 als primärem Speicher nicht nutzen."
 },
 "nplurals=2; plural=(n != 1);");

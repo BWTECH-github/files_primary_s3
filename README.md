@@ -116,7 +116,7 @@ $CONFIG = [
 | `concurrency` | no | Number of parallel parts during multipart upload (default 3) |
 | `availableStorage` | no | Optional byte count used by owncloud.online core as storage capacity hint |
 
-> 🔐 **Encryption note:** owncloud.online's app-level "Default Encryption Module" is automatically disabled when this app is active — use S3 server-side encryption instead.
+> 🔐 **Encryption note:** owncloud.online's server-side encryption cannot be used together with S3 primary storage. While an `objectstore` is configured, the switch in the admin settings is locked (it does not block `occ encryption:enable`) — use S3 server-side encryption (`serversideencryption`) instead.
 
 ---
 
@@ -188,11 +188,13 @@ What changes for the **administrator**:
 - **Backups** — back up the database *and* the S3 bucket (or rely on bucket replication / versioning).
 - **Disk usage** — `du` on the data directory shows almost nothing; query S3 for actual storage consumption.
 - **File restore** — deleted file? Use S3 versioning. The included `IVersionedObjectStorage` implementation surfaces versions through owncloud.online's standard versions UI as well.
-- **No app-level encryption** — the "Default Encryption Module" is disabled by design (S3 + owncloud.online encryption are incompatible). Use `serversideencryption` instead.
+- **No app-level encryption** — owncloud.online server-side encryption and S3 primary storage are incompatible; the settings switch is locked. Use `serversideencryption` instead.
 
 ### Admin panel
 
-After enabling, **Settings → Admin → Security → Encryption** shows a banner explaining that owncloud.online-side encryption is unavailable while S3 primary storage is active. This is informational only.
+Only while `objectstore` or `objectstore_multibucket` is configured, **Settings → Administration → Encryption** shows a hint inside the core card
+"Server-side encryption", directly above its switch, and locks the switch (the hint is the switch's accessible description).
+The app adds no card of its own. Requires the owncloud.online 11 settings layout (card `#encryptionAPI` with `#enable`); without it the hint stays where the panel renders it.
 
 ---
 

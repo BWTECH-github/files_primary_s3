@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [2.0.0] - 2026-09-17
+
+Durchgang für die Redesign-Oberfläche von owncloud.online 11.1. Betrieb mit S3
+als Primärspeicher auf dem Redesign-Kern belegt (MinIO: Hochladen und
+Herunterladen über WebDAV mit gleicher Prüfsumme, `occ s3:list`,
+`occ s3:create-bucket`). Läuft weiter ab owncloud.online 11.
+
+### Fixed
+
+- Die Verwaltungsseite „Verschlüsselung“ bekam eine zweite Karte mit derselben
+  Kennung wie die Kernkarte (`#encryptionAPI`); nach dem Umhängen des Hinweises
+  blieb sie leer stehen. Jetzt rendert die App nur den Hinweis mit eigener
+  Kennung, das Skript setzt ihn vor den Schalter und entfernt den leeren Rahmen.
+- Das Skript verschob jede Warnung der Seite vor den Schalter, auch die anderer
+  Apps. Jetzt nur den eigenen Hinweis.
+- Der gesperrte Schalter nennt den Hinweis als Beschreibung
+  (`aria-describedby`); das Ausblenden des Standard-Moduls entfällt.
+- Deutsche Texte: Hinweis mit dem Begriff der Kernkarte („serverseitige
+  Verschlüsselung“), fehlender Eintrag in de_CH, grammatisch falscher
+  Upload-Fehler (de, de_CH, de_DE); de_AT neu.
+
+### Added
+
+- `tests/visual/pruefe-verschluesselungskarte.js`: Browser-Probe für die
+  Verschlüsselungskarte (braucht eine Instanz mit `objectstore`).
+
 ## [1.6.4] - 2026-08-13
 
 ### Changed
