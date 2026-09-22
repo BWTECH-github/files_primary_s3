@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [1.6.5] - 2026-09-22
+
+### Fixed
+
+- Die `replace`-Nummer fuer `guzzlehttp/guzzle` stand auf 7.15.1, der Kern
+  liefert 7.15.2. `replace` bedeutet "diese App stellt das Paket bereit" - die
+  Nummer ist also eine Zusicherung ueber einen fremden Baum, und diese war
+  falsch. Sie ist jetzt gleichgezogen.
+
+### Added
+
+- `tests/replaced_dependencies_test.php` haelt die Zusicherung nach: er prueft
+  jede ersetzte Nummer gegen `composer.lock` des Kerns, verlangt feste
+  Fassungen statt Bereiche (ein Bereich bleibt formal richtig, waehrend der
+  Kern sich darunter bewegt) und stellt sicher, dass die zugesagte Fassung
+  reicht, was das AWS-SDK verlangt.
+
+  Aufruf: `php8.4 tests/replaced_dependencies_test.php [pfad/zum/core]`
+
+- `assertComposerDependencies()` meldet ein fehlendes oder zu altes Guzzle im
+  Klartext. Bisher lief das AWS-SDK in einem solchen Fall tief im Innern gegen
+  eine Wand, mit einer Meldung, aus der die Ursache nicht hervorging.
+
+### Changed
+
+- In `composer.json` steht jetzt neben dem `replace`-Block, warum es ihn gibt
+  und was er kostet: `composer audit` dieser App sieht die ersetzten Pakete
+  nie, Meldungen zu Guzzle sind also gegen den Kern zu pruefen, nicht hier.
+
 ## [1.6.4] - 2026-08-13
 
 ### Changed

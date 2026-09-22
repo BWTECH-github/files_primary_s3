@@ -5,8 +5,18 @@
     "php": ">=8.4",
     "aws/aws-sdk-php": "3.372.2"
   },
+  "_replace-comment": [
+    "Diese Pakete liefert der Kern (lib/composer). 'replace' haelt sie aus dem",
+    "vendor/ dieser App heraus, damit nicht zwei Guzzle-Fassungen im selben",
+    "Prozess liegen. Die Nummern sind deshalb eine Zusicherung ueber den Kern,",
+    "nicht ueber diese App - sie muessen zu core/composer.lock passen.",
+    "Zwei Folgen: (1) 'composer audit' dieser App sieht Guzzle nie, Meldungen",
+    "dazu sind gegen den Kern zu pruefen; (2) laufen die Nummern auseinander,",
+    "ist die Zusicherung falsch. tests/replaced_dependencies_test.php faengt",
+    "beides ab."
+  ],
   "replace": {
-    "guzzlehttp/guzzle": "7.15.1",
+    "guzzlehttp/guzzle": "7.15.2",
     "guzzlehttp/psr7": "2.13.0",
     "guzzlehttp/promises": "2.5.1",
     "psr/http-message": "2.0",
