@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [1.6.6] - 2026-10-14
+
+### Fixed
+
+- `occ s3:list <bucket>` brach bei einem leeren Bucket mit einem TypeError ab.
+  S3 lässt bei einer leeren Liste den Schlüssel `Contents` weg; der Wert `null`
+  ging ungeprüft an die array-typisierte Ausgabe. Jetzt wird wie bei fehlenden
+  Versionen und Löschmarkierungen eine leere Liste ausgegeben. Dasselbe gilt
+  für `occ s3:list` ohne Bucket, wenn der Speicher keinen einzigen Bucket
+  meldet (`Buckets` fehlt).
+
+### Added
+
+- Unit-Tests für `occ s3:list` gegen den MockHandler des AWS-SDK, ohne echtes
+  S3: leerer Bucket, Bucket mit Objekten, Speicher ohne Buckets, Objekt ohne
+  Versionen. Aufruf im Kern:
+  `php lib/composer/bin/phpunit -c apps/files_primary_s3/phpunit.xml`
+
 ## [1.6.5] - 2026-09-22
 
 ### Fixed

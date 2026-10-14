@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Unit-Tests dieser App im Kern ausführen:
+     php lib/composer/bin/phpunit -c apps/files_primary_s3/phpunit.xml -->
+<phpunit bootstrap="../../tests/bootstrap.php"
+		 beStrictAboutOutputDuringTests="true"
+		 failOnRisky="true"
+		 failOnWarning="true">
+	<testsuites>
+		<testsuite name="unit">
+			<directory suffix="Test.php">./tests/unit</directory>
+		</testsuite>
+	</testsuites>
+</phpunit>
