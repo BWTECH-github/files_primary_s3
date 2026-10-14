@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 
+## [2.0.1] - 2026-10-14
+
+Übernahme von main (1.6.5). Die Abhängigkeiten bleiben auf dem Redesign-Stand
+(`aws/aws-sdk-php` 3.394.9); die Zusicherung über die vom Kern gelieferten
+Pakete deckt sich mit dem Redesign-Kern 11.1 (Guzzle 7.15.2, PSR-7 2.13.0,
+Promises 2.5.1, PSR-HTTP 2.0/1.0.3/1.1.0).
+
+### Fixed
+
+- Die `replace`-Nummer für `guzzlehttp/guzzle` steht auf 7.15.2, wie der Kern
+  sie liefert (auf main als Fehlerbehebung nachgezogen; der Redesign-Zweig
+  hatte sie seit dem Sprung auf aws-sdk-php 3.394.9 schon).
+
+### Added
+
+- `tests/replaced_dependencies_test.php` hält die Zusicherung nach: prüft jede
+  ersetzte Nummer gegen `composer.lock` des Kerns, verlangt feste Fassungen
+  statt Bereiche und stellt sicher, dass die zugesagte Fassung reicht, was das
+  AWS-SDK verlangt. Aufruf: `php8.4 tests/replaced_dependencies_test.php
+  [pfad/zum/core]`
+- `assertComposerDependencies()` meldet ein fehlendes oder zu altes Guzzle im
+  Klartext statt eines Fehlers tief im Innern des AWS-SDK.
+
+### Changed
+
+- `composer.json` erklärt neben dem `replace`-Block, warum es ihn gibt und was
+  er kostet: `composer audit` dieser App sieht die ersetzten Pakete nie,
+  Meldungen zu Guzzle sind gegen den Kern zu prüfen.
+
 ## [2.0.0] - 2026-09-17
 
 Durchgang für die Redesign-Oberfläche von owncloud.online 11.1. Betrieb mit S3
@@ -29,6 +58,35 @@ Herunterladen über WebDAV mit gleicher Prüfsumme, `occ s3:list`,
 
 - `tests/visual/pruefe-verschluesselungskarte.js`: Browser-Probe für die
   Verschlüsselungskarte (braucht eine Instanz mit `objectstore`).
+
+## [1.6.5] - 2026-09-22
+
+### Fixed
+
+- Die `replace`-Nummer für `guzzlehttp/guzzle` stand auf 7.15.1, der Kern
+  liefert 7.15.2. `replace` bedeutet "diese App stellt das Paket bereit" - die
+  Nummer ist also eine Zusicherung über einen fremden Baum, und diese war
+  falsch. Sie ist jetzt gleichgezogen.
+
+### Added
+
+- `tests/replaced_dependencies_test.php` hält die Zusicherung nach: er prüft
+  jede ersetzte Nummer gegen `composer.lock` des Kerns, verlangt feste
+  Fassungen statt Bereiche (ein Bereich bleibt formal richtig, während der
+  Kern sich darunter bewegt) und stellt sicher, dass die zugesagte Fassung
+  reicht, was das AWS-SDK verlangt.
+
+  Aufruf: `php8.4 tests/replaced_dependencies_test.php [pfad/zum/core]`
+
+- `assertComposerDependencies()` meldet ein fehlendes oder zu altes Guzzle im
+  Klartext. Bisher lief das AWS-SDK in einem solchen Fall tief im Innern gegen
+  eine Wand, mit einer Meldung, aus der die Ursache nicht hervorging.
+
+### Changed
+
+- In `composer.json` steht jetzt neben dem `replace`-Block, warum es ihn gibt
+  und was er kostet: `composer audit` dieser App sieht die ersetzten Pakete
+  nie, Meldungen zu Guzzle sind also gegen den Kern zu prüfen, nicht hier.
 
 ## [1.6.4] - 2026-08-13
 
