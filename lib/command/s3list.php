@@ -57,6 +57,7 @@ class s3List extends Command {
 		$bucketName = $input->getArgument('bucket');
 		if ($bucketName === null) {
 			$result = $client->listBuckets();
+			// Ohne einen einzigen Bucket fehlt der Schlüssel "Buckets": null, kein leeres Array.
 			$buckets = \array_map(static function (array $bucket) use ($client) {
 				try {
 					$versionStatus = $client->getBucketVersioning([
@@ -77,7 +78,7 @@ class s3List extends Command {
 				}
 
 				return $bucket;
-			}, $result['Buckets']);
+			}, $result['Buckets'] ?? []);
 			$this->printValue($output, $buckets, ['Name', 'Versioning', 'CORS']);
 		} else {
 			$object = $input->getArgument('object');
@@ -85,7 +86,8 @@ class s3List extends Command {
 				$result = $client->listObjects([
 					'Bucket' => $bucketName,
 				]);
-				$this->printValue($output, $result['Contents'], ['Key', 'LastModified', 'ETag', 'Size']);
+				// Ein leerer Bucket kommt ohne den Schlüssel "Contents" zurück: null, kein leeres Array.
+				$this->printValue($output, $result['Contents'] ?? [], ['Key', 'LastModified', 'ETag', 'Size']);
 			} else {
 				$result = $client->listObjectVersions([
 					'Bucket' => $bucketName,
